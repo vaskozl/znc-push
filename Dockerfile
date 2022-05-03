@@ -10,8 +10,10 @@ RUN set -x \
         perl \
         python3
 
-RUN wget -O /tmp/push.cpp https://raw.githubusercontent.com/jreese/znc-push/master/push.cpp
-RUN /opt/znc/bin/znc-buildmod /tmp/push.cpp || exit 12
+RUN wget https://raw.githubusercontent.com/jreese/znc-push/master/push.cpp && \
+  /opt/znc/bin/znc-buildmod push.cpp && \
+  mv push.so /opt/znc/lib64/znc/ && \
+  rm push.cpp
 
 USER znc
 CMD ["/opt/znc/bin/znc", "--foreground", "--datadir", "/znc-data"]

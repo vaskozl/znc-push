@@ -13,5 +13,5 @@ RUN set -x \
 RUN wget -O /tmp/push.cpp https://raw.githubusercontent.com/jreese/znc-push/master/push.cpp
 RUN /opt/znc/bin/znc-buildmod /tmp/push.cpp || exit 12
 
-ENV DATA_DIR="/config"
-CMD ["/opt/znc/bin/znc", "--foreground", "--datadir", "$DATA_DIR"]
+USER znc
+CMD ["/opt/znc/bin/znc", "--foreground", "--datadir", "/znc-data"]

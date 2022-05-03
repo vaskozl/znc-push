@@ -1,28 +1,17 @@
-FROM fedora
-LABEL maintainer "Alex Corvin <acorvin@redhat.com>"
+FROM znc:slim
 
-ENV PARAM_WDIR="/root/.znc/"
-ENV PARAM_HTTP_PORT="16669"
-ENV ZNC_DEFAULT_CONFIG="znc.conf-default"
+# znc:slim removed them. Install them again.
+RUN set -x \
+    && apk add --no-cache \
+        build-base \
+        cmake \
+        icu-dev \
+        openssl-dev \
+        perl \
+        python3
 
-RUN yum install -y znc znc-devel \
-    libcurl-devel git gcc-c++ redhat-rpm-config \
-    psmisc; \
-    yum clean all
+RUN wget -O /tmp/push.cpp https://raw.githubusercontent.com/jreese/znc-push/master/push.cpp
+RUN /opt/znc/bin/znc-buildmod /tmp/push.cpp || exit 12
 
-WORKDIR /root/.znc/
-# OpenShift bug:
-# EXPOSE "$PARAM_HTTP_PORT"
-
-EXPOSE 16669
-
-RUN chgrp -R 0 "/root/.znc" && chmod -R g+rwX "/root/.znc"
-RUN git clone https://github.com/jreese/znc-push.git /tmp/znc-push; \
-    pushd /tmp/znc-push; \
-    make curl=yes; \
-    make install; \
-    popd
-
-ADD "run.sh" "/bin/"
-ADD "$ZNC_DEFAULT_CONFIG" "/etc/"
-CMD ["/bin/run.sh"]
+ENV DATA_DIR="/config"
+CMD ["/opt/znc/bin/znc", "--foreground", "--datadir", "$DATA_DIR"]
